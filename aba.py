@@ -68,7 +68,7 @@ def extract_info():
 
 # suivre ce modele
 def extract_prenom():
-    query = "sedata = lect * from contact where prenom= %s"
+    query = "select * from contact where prenom= %s"
     var = ("robert",)
     mycursor.execute(query, var)
     data = mycursor.fetchone()
