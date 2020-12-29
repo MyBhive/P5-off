@@ -17,6 +17,7 @@ name_fr2 = 'agribalyse'
 name_fr3 = 'agribalyse_food_name_fr'
 nutri = 'nutrition_grades'
 url = 'url'
+ingredient = "ingredients_text_fr"
 
 
 # recherche de données
@@ -24,11 +25,13 @@ def find_data():
     num_product = 0
     for e in prod_base:
         if num_product <= 20:
-            print(e[prod_name])
-            print(e[nutri])
-            print(e[url])
+            print("Nom du produit: ", e[prod_name])
+            print("Nutriscore associé: ", e[nutri])
+            print("Lien internet:", e[url])
+            print("Liste des ingrédients: ", e[ingredient])
+            print(".........................")
             num_product += 1
-
+# erreur au big city pizzas pour les ingrédients"
 
 cnx = mysql.connector.connect(user='root', password='Gab03nas18',
                               host='localhost', database='people')
@@ -106,4 +109,4 @@ def delete_info(prenom, id):
 
 
 # appel de la méthode pour la tester
-alpha_order()
+find_data()

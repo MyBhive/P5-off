@@ -2,6 +2,8 @@ import mysql.connector
 
 
 class Database:
+    """class to create and manage
+    the main database of category and product object"""
     def __init__(self, user, password):
         self.user = user
         self.password = password
@@ -12,6 +14,7 @@ class Database:
         self.mycursor = self.mysql.cursor()
 
     def create_database(self):
+        """Method to create a database with 2 tables: category and product"""
         opening = "CREATE DATABASE purbeurre CHARACTER SET 'utf8'"
         using = "USE purbeurre"
         # creating a table category : the id is not auto increment to choose one per category
@@ -40,10 +43,12 @@ class Database:
         self.mycursor.execute(table_product)
 
     def use(self):
+        """Method to use the database"""
         use = "USE purbeurre"
         self.mycursor.execute(use)
 
     def show_base(self):
+        """Method to show the database informations"""
         show = "SHOW DATABASES"
         self.mycursor.execute(show)
         for element in self.mycursor:
@@ -52,29 +57,38 @@ class Database:
 # aller chercher le produit sur openfoodfacts et le mettre dans la base de données
 # méthode qui travaille avec l'API et requests
     def insert_data(self, id, name):
+        """ Method to insert new object inside the database"""
         pass
 
 # supprimer un élément (si celui est en double ou non nécessaire)
     def delete_data(self):
+        """Method to delete an useless object"""
         pass
 
     def select_category(self):
+        """Method to select all the object from a category"""
         selection = "SELECT * FROM category"
         self.mycursor.execute(selection)
         result = self.mycursor.fetchall()
         return result
 
     def select_product(self):
+        """Method to select all the object from a product"""
         selection = "SELECT * FROM product"
         self.mycursor.execute(selection)
         result = self.mycursor.fetchall()
         return result
 
     def choose_category(self):
+        """Method to choose a category through an input action"""
         input("quelle catégorie d'aliment désirez-vous?")
         pass
 
     def choose_product(self):
+        """Method to choose a product through an inout action"""
         input("quel aliment désirez-vous?")
-        # sans doute créer un liste des produits et sélectionner un produit grâce à son id ou indice
+        # Sélectionnez l'aliment.
+        # [Plusieurs propositions associées à un chiffre.
+        # L'utilisateur entre le chiffre correspondant à l'aliment choisi et appuie sur entrée]
+        # il faut utiliser choice pour une liste d'aliment données. Doit on en choisir 20 ou 100?
         pass
