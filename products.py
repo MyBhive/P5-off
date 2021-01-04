@@ -1,66 +1,54 @@
-import requests
-import mysql.connector
 
 
 class Product:
-    """Class to create product's object
-    and method to insert them inside a database"""
+    """Class to handle a product object: to find, to parse or to insert in database"""
 
-    def __init__(self, num_prod, category):
+    def __init__(self, name, nutriscore, store, url, id):
         """Initialize the attribute of the product class"""
-        self.cnx = mysql.connector.connect(user='root',
-                                           password='Gab03nas18',
-                                           host='localhost')
-
-        self.mycursor = self.cnx.cursor()
-        self.response = requests.get("https://be-fr.openfoodfacts.org/cgi/"
-                                     "search.pl?search_simple=1&"
-                                     "action=process&"
-                                     "tagtype_0=categories&"
-                                     "tag_contains_0=contains&"
-                                     "tag_0=pizza&"
-                                     "sort_by=ciqual_food_name_tags&"
-                                     "page_size=200&json=1")
         # lecture des donnees
-        self.package = self.response.json()
-        self.prod_base = self.package['products']
-        self.prod_name = self.prod_base[num_prod]['product_name']
-        self.brand = self.prod_base[num_prod]['brands']
-        self.nutri = self.prod_base[num_prod]['nutrition_grades']
-        self.store = self.prod_base[num_prod]['stores']
-        self.url = self.prod_base[num_prod]['url']
+        self.name = name
+        self.nutri = nutriscore
+        self.store = store
+        self.url = url
+        self.id = id
         self.product_info = (
-            self.prod_name,
-            self.brand,
+            self.name,
             self.nutri,
             self.store,
-            self.url,
-            category  # lien entre les bases donnees category et product
+            self.url  # lien entre les bases donnees category et product
         )
 
-        # recherche de donnees
-    def find_data(self):
+    def find_data(self, mycursor):
+        """Method to find the information about a certain amount of product"""
+        query = "SELECT EXISTS (SELECT * from product where name= %s)"
+        var = self.name
+        mycursor.execute(query, var)
+        data = mycursor.fetchall()
+        return data
+
+    def parsing(self, prod_base):
         """Method to find the information about a certain amount of product"""
         num_product = 0
-        for e in self.prod_base:
-            if num_product <= 20:
-                print("Nom du produit: ", e[self.prod_name])
+        for e in prod_base:
+            if num_product <= 10:
+                print(num_product)
+                print("Nom du produit: ", e[self.name])
                 print("Nutriscore associé: ", e[self.nutri])
+                print("magasin: ", e[self.store])
                 print("Lien internet:", e[self.url])
                 print(".........................")
                 num_product += 1
 
-    def insert_into_base(self):
+    def insert_prod(self, mycursor):
         """Method to insert a new product inside the product database"""
         query = "INSERT INTO product (" \
                 "name, " \
-                "brand, " \
                 "nutriscore, " \
                 "store, " \
                 "url, " \
                 "id_category" \
                 ") " \
-                "VALUES (%s, %s, %s, %s, %s, %s)"
+                "VALUES (%s, %s, %s, %s, %s)"
         var = self.product_info
-        self.mycursor.execute(query, var)
-        self.cnx.commit()
+        mycursor.execute(query, var)
+

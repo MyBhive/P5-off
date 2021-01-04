@@ -1,25 +1,10 @@
 
-import mysql.connector
-
 
 class Category:
-    """Class to create categories
-    and method to insert them inside a database"""
+    """Class to handle a category object: to find, to parse or to insert in database"""
 
     def __init__(self, id, name):
         """Initialize the attribute of the category class"""
-        self.cnx = mysql.connector.connect(user='root',
-                                           password='Gab03nas18',
-                                           host='localhost')
-
-        self.mycursor = self.cnx.cursor()
-        self.category = {
-            1: "snacks",
-            2: "pizzas",
-            3: "dessert",
-            4: "charcuteries",
-            5: "boissons"
-        }
         self.id = id
         self.name = name
         self.cate = (
@@ -27,9 +12,26 @@ class Category:
             self.name
         )
 
-    def insert_cat(self):
+    def find_data(self, mycursor):
+        """Method to find the categories"""
+        query = "SELECT EXISTS (select * from category where name= %s)"
+        var = self.name
+        mycursor.execute(query, var)
+        data = mycursor.fetchall()
+        return data
+
+    def parsing(self, prod_base):
+        """Method of parsing the categories"""
+        num_cat = 0
+        for e in prod_base:
+            if num_cat <= 10:
+                print(num_cat)
+                print("catégorie: ", e[self.name])
+                print(".........................")
+                num_cat += 1
+
+    def insert_cat(self, mycursor):
         """Method to insert a new category inside the category database"""
         query = "INSERT INTO category (id, name) VALUES (%s, %s)"
         var = self.cate
-        self.mycursor.execute(query, var)
-        self.cnx.commit()
+        mycursor.execute(query, var)
