@@ -12,15 +12,14 @@ class Category:
             self.name
         )
 
-    def find_data(self, mycursor):
+    def select_category(self, mycursor):
         """Method to find the categories"""
-        query = "SELECT EXISTS (select * from category where name= %s)"
-        var = self.name
-        mycursor.execute(query, var)
+        query = "SELECT EXISTS (select * from category)"
+        mycursor.execute(query)
         data = mycursor.fetchall()
         return data
 
-    def parsing(self, prod_base):
+    def parsing_category(self, prod_base):
         """Method of parsing the categories"""
         num_cat = 0
         for e in prod_base:
@@ -30,8 +29,9 @@ class Category:
                 print(".........................")
                 num_cat += 1
 
-    def insert_cat(self, mycursor):
+    def insert_cat(self, mycursor, mysql):
         """Method to insert a new category inside the category database"""
         query = "INSERT INTO category (id, name) VALUES (%s, %s)"
         var = self.cate
         mycursor.execute(query, var)
+        mysql.commit()

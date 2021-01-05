@@ -1,5 +1,4 @@
 
-
 class Product:
     """Class to handle a product object: to find, to parse or to insert in database"""
 
@@ -11,22 +10,17 @@ class Product:
         self.store = store
         self.url = url
         self.id = id
-        self.product_info = (
-            self.name,
-            self.nutri,
-            self.store,
-            self.url  # lien entre les bases donnees category et product
-        )
+        self.product_info = []
 
-    def find_data(self, mycursor):
+    def select_products(self, mycursor, wish_cat):
         """Method to find the information about a certain amount of product"""
-        query = "SELECT EXISTS (SELECT * from product where name= %s)"
-        var = self.name
+        query = "SELECT EXISTS (SELECT * FROM product where id_category = %s)"
+        var = wish_cat
         mycursor.execute(query, var)
         data = mycursor.fetchall()
         return data
 
-    def parsing(self, prod_base):
+    def parsing_product(self, prod_base):
         """Method to find the information about a certain amount of product"""
         num_product = 0
         for e in prod_base:
@@ -39,7 +33,7 @@ class Product:
                 print(".........................")
                 num_product += 1
 
-    def insert_prod(self, mycursor):
+    def insert_prod(self, mycursor, mysql):
         """Method to insert a new product inside the product database"""
         query = "INSERT INTO product (" \
                 "name, " \
@@ -51,4 +45,15 @@ class Product:
                 "VALUES (%s, %s, %s, %s, %s)"
         var = self.product_info
         mycursor.execute(query, var)
+        mysql.commit()
 
+    def api_db(self, prod_base):
+        """Method to find the information about a certain amount of product"""
+        num_product = 0
+        for e in prod_base:
+            if num_product <= 10:
+                self.product_info.append(e[self.name])
+                self.product_info.append(e[self.nutri])
+                self.product_info.append(e[self.store])
+                self.product_info.append(e[self.url])
+                num_product += 1
