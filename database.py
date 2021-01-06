@@ -4,7 +4,6 @@ import requests
 from .constant import *
 from .category import *
 from .products import *
-from .favorite import *
 
 
 class DataBase:
@@ -86,13 +85,11 @@ class DataBase:
                         "tag_contains_0=contains&"
                         "tag_0={}&"
                         "sort_by=ciqual_food_name_tags&"
-                        "page_size=200&json=1".format(CATEGORY))
+                        "page_size=200&json=1".format(value))
                 response = requests.get(page)
                 package = response.json()
-                num_product = 0
-                pass
-
-
-
-
-
+                prod_base = package['products']
+                product = Product('product_name', 'nutrition_grades', 'stores', 'url', key)
+                data_list = product.api_db(prod_base, 10)
+                for item in data_list:
+                    product.insert_prod(self.mycursor, self.mysql, item)
