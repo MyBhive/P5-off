@@ -20,7 +20,7 @@ class DataBase:
 
     def create_database(self):
         """Method to create a database with 3 tables:
-        category, product and favorite"""
+        category, product and substitute"""
         opening = "CREATE DATABASE purbeurre CHARACTER SET 'utf8'"
         using = "USE purbeurre"
         # creating a table category : the id is not auto increment to choose one per category
@@ -45,9 +45,12 @@ class DataBase:
                         "FOREIGN KEY(id_category) " \
                         "REFERENCES category(id)) " \
                         "ENGINE = INNODB"
-        table_favorite = "CREATE TABLE favorite " \
-                         "(favorite_id SMALLINT NOT NULL AUTO_INCREMENT," \
-                         "PRIMARY KEY(favorite_id)," \
+        # the substitute Table is simple
+        # because it will be join to the product table later.
+        # Better not to repeat informations
+        table_substitute = "CREATE TABLE substitute " \
+                         "(substitute_id SMALLINT NOT NULL AUTO_INCREMENT," \
+                         "PRIMARY KEY(substitute_id)," \
                          "product_ref SMALLINT  NOT NULL, " \
                          "CONSTRAINT fk_products_id FOREIGN KEY(product_ref) " \
                          "REFERENCES product(id)) " \
@@ -56,7 +59,7 @@ class DataBase:
         self.mycursor.execute(using)
         self.mycursor.execute(table_category)
         self.mycursor.execute(table_product)
-        self.mycursor.execute(table_favorite)
+        self.mycursor.execute(table_substitute)
 
     def db_exist(self):
         """Method to check if the database 'purbeurre' has been created"""
@@ -90,6 +93,8 @@ class DataBase:
                 package = response.json()
                 prod_base = package['products']
                 product = Product('product_name', 'nutrition_grades', 'stores', 'url', key)
-                data_list = product.api_db(prod_base, 10)
+                data_list = product.api_db_list_create(prod_base, 10)
                 for item in data_list:
                     product.insert_prod(self.mycursor, self.mysql, item)
+                max_products += 1
+# mettre des exceptions et des conditions

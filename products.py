@@ -11,7 +11,6 @@ class Product:
         self.url = url
         self.id = id
 
-
     def select_products(self, mycursor, wish_cat):
         """Method to find the information about a certain amount of product"""
         query = "SELECT EXISTS (SELECT * FROM product where id_category = %s)"
@@ -47,7 +46,7 @@ class Product:
         mycursor.execute(query, var)
         mysql.commit()
 
-    def api_db(self, prod_base, amount):
+    def api_db_list_create(self, prod_base, amount):
         """Method to find the information about a certain amount of product"""
         product_info = []
         num_product = 0
@@ -58,3 +57,10 @@ class Product:
                 product_info.append(e[self.store])
                 product_info.append(e[self.url])
                 num_product += 1
+
+    def get_nutriscore(self, mycursor, id):
+        """Method to get the nutriscore from a product"""
+        query = "SELECT nutri FROM product where id = %s"
+        var = id
+        answer = mycursor.execute(query, var)
+        return answer
