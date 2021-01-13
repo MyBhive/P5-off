@@ -211,8 +211,8 @@ class DataBase:
         inside the product table in the database"""
         query = "INSERT INTO product (" \
                 "name, " \
-                "nutriscore, " \
-                "store, " \
+                "nutri, " \
+                "stores, " \
                 "url, " \
                 "id_category" \
                 ") " \
@@ -278,29 +278,34 @@ class DataBase:
         - insert a certain amount of product inside the product table
         depending of the category they belong"""
         print("Database creation in progres.......")
-        self.mycursor.execute("USE purbeurre") # méthode use déja appeler dans le controller
+        # méthode use déja appeler dans le controller
+        self.mycursor.execute("USE purbeurre")
         num_prod = 0
-        for key, value in CATEGORY.items(): # boucle fonctionne
-            self.insert_cat(key, value) # seule la première catégorie s'insert
-            while num_prod <= amount_wanted: # le reste ne fonctionne pas pour l'instant
-                url = "https://fr.openfoodfacts.org/category/" \
-                      "{}.json".format(CATEGORY[key])
-                response = requests.get(url)
-                package = response.json()
-                prod_base = package['products']
+        for key, value in CATEGORY.items():
+            self.insert_cat(key, value)
+            url = "https://fr.openfoodfacts.org/category/" \
+                  "{}.json".format(CATEGORY[key])
+            response = requests.get(url)
+            package = response.json()
+            prod_base = package['products']
+            while num_prod <= amount_wanted:
                 try:
                     for product in prod_base:
-                        data = {
-                            'name': product['product_name'],
-                            'nutri': product['nutrition_grades'],
-                            'stores': product['stores'],
-                            'url': product['nutrition_grades'],
-                            'id_category': key
-                        }
+                        data = (
+                            product['product_name'],
+                            product['nutrition_grades'],
+                            product['stores'],
+                            product['url'],
+                            key
+                        )
                         self.insert_prod(data)
                         num_prod += 1
+                        print(
+                            "the category {} has been created"
+                            .format(CATEGORY[key])
+                        )
                 except:  # est-ce la bonne exception (voir issues sur github)
-                    self.mysql()
+                    pass
 
 
 class Controller:
