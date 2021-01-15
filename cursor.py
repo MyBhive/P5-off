@@ -249,7 +249,7 @@ class DataBase:
         number = 1
         for info in data:
             print("___________________________________")
-            print("Substitute N°{}: '{}' ".format(number,info[0]))
+            print("Substitute N°{}: '{}' ".format(number, info[0]))
             print("the nutriscore is '{}'".format(info[1]))
             if info[2] == " ":
                 print("Sorry, no information about the store is available.")
@@ -322,9 +322,9 @@ class Controller:
         """Method to start the program calling all Methods created"""
         print("Please connect to the Database: ")
         # boucle si le user ou mot de passe pas bon redemander
-        self.login = input("user : ")
-        self.password = input("password : ")
-        self.appli = DataBase(self.login, self.password)
+        login = input("user : ")
+        password = input("password : ")
+        self.appli = DataBase(login, password)
         exist = self.appli.db_exist()
         if exist:
             self.appli.use_db()
@@ -336,21 +336,21 @@ class Controller:
         run = 1
         while run:
             question = input(
-                "To search a product and his substitute tape: 'O' "
-                "To search your substitute selection tape: 'Y', "
-                "TO quite the program tape: 'Q' "
+                "To search a product and his substitute tape: 'a' "
+                "To search your substitute selection tape: 'b', "
+                "TO quite the program tape: 'q' "
             )
-            if question == "O":
+            if question == "a":
                 category = self.appli.select_category()
                 ask_cat = self.view.ask_category(category)
-
+                # aller chercher tout les produits d'une categorie sur mysql
                 product = self.appli.select_products(ask_cat)
+                # faire une liste de ses numeros de produits pour demander une selection
                 ask_prod = self.view.ask_product(product)
 
                 nutri = self.appli.get_nutriscore(ask_prod)
                 # on met les sub du meilleur au moins bon
                 substitute = self.appli.get_substitute(ask_cat, nutri)
-
                 if substitute:
                     choice = self.view.substitute_chosen(substitute)
                     put_in_sub = self.appli.find_substitute(choice[0])
@@ -362,17 +362,17 @@ class Controller:
                         print("see you soon maybe i don't know can you repeat the question")
                 if not substitute:
                     print("Sorry no healthier product has been find :(")
-            if question == "Y":
+            if question == "b":
                 self.appli.select_substitute()
-            if question == "Q":
+            if question == "q":
                 print("Thank you and see you soon!")
                 run = 0
-
 
 
 bob = DataBase('root', 'Gab03nas18')
 pop = Controller()
 pop.use_programm()
+
 
 
 
