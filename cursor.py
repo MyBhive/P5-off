@@ -287,11 +287,11 @@ class DataBase:
         self.mycursor.execute("USE purbeurre")
         for key, value in CATEGORY.items():
             self.insert_cat(key, value)
-            num_prod = 0
             url = "https://fr.openfoodfacts.org/category/{}.json".format(CATEGORY[key])
             response = requests.get(url)
             package = response.json()
             prod_base = package['products']
+            num_prod = 0
             for product in prod_base:
                 if num_prod <= amount_wanted:
                     try:
@@ -349,15 +349,19 @@ class Controller:
                 ask_prod = self.view.ask_product(product)
 
                 nutri = self.appli.get_nutriscore(ask_prod)
-                # on met les sub du meilleur au moins bon
+                # on met les sub du meilleur au moins bon et on prend le 1 de la liste réordonné
                 substitute = self.appli.get_substitute(ask_cat, nutri)
                 if substitute:
                     choice = self.view.substitute_chosen(substitute)
                     put_in_sub = self.appli.find_substitute(choice[0])
                     proposal = input("Do you want to add this product to your favorite substitute? (y/n):")
                     if proposal == "y":
-                        self.appli.insert_into_substitute(choice[0])
-                        print("You substitute has been correctly saved!")
+                        if put_in_sub:
+                            if substitute[0][0] == put_in_sub[0][1]:
+                                print("You already saved this product.")
+                        else:
+                            self.appli.insert_into_substitute(choice[0])
+                            print("You substitute has been correctly saved!")
                     if proposal == "n":
                         print("see you soon maybe i don't know can you repeat the question")
                 if not substitute:
