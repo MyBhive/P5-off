@@ -1,8 +1,10 @@
+# coding: utf-8
 import mysql.connector
 import requests
+from random import choices
+import yaml
 
-
-""" constant data for the purbeurre application"""
+"""constant data for the purbeurre application"""
 CATEGORY = {
     1: "desserts-glaces",
     2: "pizzas",
@@ -43,9 +45,6 @@ class Substitute:
 
 class View:
     """Class to handle all the view for the program (print)"""
-    def __init__(self):
-        pass
-
     def ask_category(self, list_category):
         """To ask the costumer to choose a category of product"""
         print("___________________________________")
@@ -60,7 +59,7 @@ class View:
             if 0 <= user_input <= 5:
                 return user_input
             return self.ask_category(list_category)
-        except:
+        except ValueError:
             return self.ask_category(list_category)
 
     def ask_product(self, list_product):
@@ -69,10 +68,13 @@ class View:
         print("___________________________________")
         print("Which product would you like to substitute?")
         print("___________________________________")
-        for item in list_product:
+        # select 10 randoms products
+        random_select = choices(list_product, k=10)
+        for item in random_select:
             print("Product's number: {}".format(item[0]))
             print("Product's name: {}".format(item[1]))
             print("Nutriscore: {}".format(item[2]))
+            # if there is no stores register, print a message
             if item[3] == "":
                 print("Sorry, no store has been founded")
             else:
@@ -85,18 +87,19 @@ class View:
             if user_input in id_list:
                 return user_input
             return self.ask_product(list_product)
-        except:
+        except ValueError:
             print("sorry can you enter an existing product's number?")
             return self.ask_product(list_product)
 
     def substitute_chosen(self, sub_prod):
         """Method of view after finding a product
-        to show all the information belonging to it"""
+        to show all the informations belonging to it"""
         result = sub_prod[0]
         print("___________________________________")
         print("we found a substitute! ")
         print("We propose you : {}".format(result[1]))
         print("The nutri-score for this product is: {}".format(result[2]))
+        # if there is no stores register, print a message
         if result[3] == "":
             print("Sorry, no store has been founded.")
         else:
@@ -104,6 +107,64 @@ class View:
         print("You can also just clic on this link: {}".format(result[4]))
         print("___________________________________")
         return result
+
+    def sub_information(self, data):
+        """To show the information about
+        all the substitute saved in database"""
+        number = 1
+        for info in data:
+            print("___________________________________")
+            print("Substitute N°{}: '{}' ".format(number, info[0]))
+            print("the nutriscore is '{}'".format(info[1]))
+            if info[2] == " ":
+                print("Sorry, no information about the store is available.")
+            else:
+                print("You can find it there: {}".format(info[2]))
+            print("For more information, clic on the link: {}".format(info[3]))
+            number += 1
+
+    def question(self):
+        """Question input to start the program and
+        ask what the client wants to search or check"""
+        question = input(
+            "To search a product and his substitute tape: 'a' "
+            "To search your substitute selection tape: 'b', "
+            "TO quite the program tape: 'q' "
+        )
+        return question
+
+    def proposal(self):
+        """Question input to ask for saving or not the subsitute"""
+        proposal = input(
+            "Do you want to add this product "
+            "to your favorite substitute? (y/n):"
+        )
+        return proposal
+
+    def already_saved(self):
+        """Message: You already saved this product"""
+        saved = print("You already saved this product.")
+        return saved
+
+    def correctly_saved(self):
+        """Message: You substitute has been correctly saved!"""
+        correct = print("You substitute has been correctly saved!")
+        return correct
+
+    def no_save_wish(self):
+        """Message after asking to quite the program"""
+        no = print("See you soon! Maybe! I don't know!")
+        return no
+
+    def sub_not_find(self):
+        """Message: Sorry no healthier product has been find"""
+        nope = print("Sorry no healthier product has been find :(")
+        return nope
+
+    def bye(self):
+        """Good bye message"""
+        bye = print("Thank you and see you soon!")
+        return bye
 
 
 class DataBase:
@@ -136,10 +197,10 @@ class DataBase:
         table_product = "CREATE TABLE product " \
                         "(id SMALLINT  NOT NULL AUTO_INCREMENT," \
                         "PRIMARY KEY(id)," \
-                        "name VARCHAR(100)," \
+                        "name VARCHAR(200)," \
                         "nutri CHAR(1)," \
-                        "stores VARCHAR (100)," \
-                        "url VARCHAR(150)," \
+                        "stores VARCHAR (200)," \
+                        "url VARCHAR(200)," \
                         "id_category SMALLINT NOT NULL," \
                         "CONSTRAINT fk_product_category " \
                         "FOREIGN KEY(id_category) " \
@@ -246,17 +307,7 @@ class DataBase:
                 "ON product.id = substitute.product_ref"
         self.mycursor.execute(query)
         data = self.mycursor.fetchall()
-        number = 1
-        for info in data:
-            print("___________________________________")
-            print("Substitute N°{}: '{}' ".format(number, info[0]))
-            print("the nutriscore is '{}'".format(info[1]))
-            if info[2] == " ":
-                print("Sorry, no information about the store is available.")
-            else:
-                print("You can find it in this store: {}".format(info[2]))
-            print("For more information, clic on the link: {}".format(info[3]))
-            number += 1
+        return data
 
     def insert_into_substitute(self, substitute_id):
         """Method to insert into the
@@ -268,7 +319,7 @@ class DataBase:
         self.mysql.commit()
 
     def find_substitute(self, id):
-        """Method to find substitute with is category id"""
+        """Method to find a substitute with his category id"""
         query = "SELECT * FROM substitute " \
                 "WHERE product_ref = %s"
         var = (id,)
@@ -287,8 +338,18 @@ class DataBase:
         self.mycursor.execute("USE purbeurre")
         for key, value in CATEGORY.items():
             self.insert_cat(key, value)
-            url = "https://fr.openfoodfacts.org/category/{}.json".format(CATEGORY[key])
-            response = requests.get(url)
+            url = "https://fr.openfoodfacts.org/cgi/search.pl"
+            payload = {
+                "search_simple": "1",
+                "action": "process",
+                "tagtype_0": "categories",
+                "tag_contains_0": "contains",
+                "tag_0": "{}".format(CATEGORY[key]),
+                "sort_by": "ciqual_food_name_tags",
+                "page_size": "1000",
+                "json": "1"
+            }
+            response = requests.get(url, params=payload)
             package = response.json()
             prod_base = package['products']
             num_prod = 0
@@ -304,11 +365,25 @@ class DataBase:
                         )
                         self.insert_prod(data)
                         num_prod += 1
-                        print("the product has been added to the category '{}'".format(CATEGORY[key]))
+                        print(
+                            "the product has been added to the category '{}'"
+                            .format(CATEGORY[key])
+                        )
                     except KeyError:
                         print("No stores information available")
-                    except:
-                        print("Error in the database insertion")
+
+    def create_or_connect(self):
+        """Method to start the program:
+        - if the database exist then we use it
+        - if the database doesnt exist
+        then car create it to use it"""
+        exist = self.db_exist()
+        if exist:
+            self.use_db()
+        else:
+            self.create_database()
+            self.use_db()
+            self.insert_data(50)
 
 
 class Controller:
@@ -318,66 +393,74 @@ class Controller:
         """Initialization"""
         self.view = View()
 
-    def use_programm(self):
-        """Method to start the program calling all Methods created"""
-        print("Please connect to the Database: ")
-        # boucle si le user ou mot de passe pas bon redemander
-        login = input("user : ")
-        password = input("password : ")
-        self.appli = DataBase(login, password)
-        exist = self.appli.db_exist()
-        if exist:
-            self.appli.use_db()
-        else:
-            self.appli.create_database()
-            self.appli.use_db()
-            self.appli.insert_data(50)
+    def yaml_loader(self, filepath):
+        """Loads the login for the database with a yaml file"""
+        with open(filepath, "r") as file:
+            login = yaml.load(file, Loader=yaml.FullLoader)
+            for name, value in login.items():
+                return name, value
 
+    def ask_and_find(self):
+        """Method to:
+        - ask a category
+        - ask a product
+        - find a substitute for this chosen product"""
+        category = self.appli.select_category()
+        ask_cat = self.view.ask_category(category)
+        # aller chercher tout les produits d'une categorie sur mysql
+        product = self.appli.select_products(ask_cat)
+        # faire une liste de ses numeros de produits pour demander une selection
+        ask_prod = self.view.ask_product(product)
+        nutri = self.appli.get_nutriscore(ask_prod)
+        # on met les sub du meilleur au moins bon et on prend le 1 de la liste réordonné
+        substitute = self.appli.get_substitute(ask_cat, nutri)
+        return substitute
+
+    def saving_or_not(self, substitute):
+        """Method to:
+        - ask if the client wants to save this substitute in data
+        - react depending of the answer yes or no"""
+        if substitute:
+            choice = self.view.substitute_chosen(substitute)
+            put_in_sub = self.appli.find_substitute(choice[0])
+            go = 1
+            while go:
+                proposal = self.view.proposal()
+                if proposal == "y":
+                    if put_in_sub:
+                        if substitute[0][0] == put_in_sub[0][1]:
+                            self.view.already_saved()
+                            go = 0
+                    else:
+                        self.appli.insert_into_substitute(choice[0])
+                        self.view.correctly_saved()
+                        go = 0
+                if proposal == "n":
+                    self.view.no_save_wish()
+                    go = 0
+        if not substitute:
+            self.view.sub_not_find()
+
+    def use_programm(self):
+        """Method to start the program
+        calling all Methods created"""
+        login = self.yaml_loader("authentification.yaml")
+        self.appli = DataBase(login[0], login[1])
+        self.appli.create_or_connect()
         run = 1
         while run:
-            question = input(
-                "To search a product and his substitute tape: 'a' "
-                "To search your substitute selection tape: 'b', "
-                "TO quite the program tape: 'q' "
-            )
+            question = self.view.question()
             if question == "a":
-                category = self.appli.select_category()
-                ask_cat = self.view.ask_category(category)
-                # aller chercher tout les produits d'une categorie sur mysql
-                product = self.appli.select_products(ask_cat)
-                # faire une liste de ses numeros de produits pour demander une selection
-                ask_prod = self.view.ask_product(product)
-
-                nutri = self.appli.get_nutriscore(ask_prod)
-                # on met les sub du meilleur au moins bon et on prend le 1 de la liste réordonné
-                substitute = self.appli.get_substitute(ask_cat, nutri)
-                if substitute:
-                    choice = self.view.substitute_chosen(substitute)
-                    put_in_sub = self.appli.find_substitute(choice[0])
-                    proposal = input("Do you want to add this product to your favorite substitute? (y/n):")
-                    if proposal == "y":
-                        if put_in_sub:
-                            if substitute[0][0] == put_in_sub[0][1]:
-                                print("You already saved this product.")
-                        else:
-                            self.appli.insert_into_substitute(choice[0])
-                            print("You substitute has been correctly saved!")
-                    if proposal == "n":
-                        print("see you soon maybe i don't know can you repeat the question")
-                if not substitute:
-                    print("Sorry no healthier product has been find :(")
+                find = self.ask_and_find()
+                self.saving_or_not(find)
             if question == "b":
-                self.appli.select_substitute()
+                sub = self.appli.select_substitute()
+                self.view.sub_information(sub)
             if question == "q":
-                print("Thank you and see you soon!")
+                self.view.bye()
                 run = 0
 
 
-bob = DataBase('root', 'Gab03nas18')
 pop = Controller()
 pop.use_programm()
-
-
-
-
 
