@@ -1,4 +1,3 @@
-# coding: utf-8
 import mysql.connector
 import requests
 from random import choices
@@ -10,7 +9,12 @@ CATEGORY = {
     2: "pizzas",
     3: "chocolats",
     4: "soupes",
-    5: "boissons"
+    5: "boissons",
+    6: "biscuits",
+    7: "viandes",
+    8: "cereales",
+    9: "pains",
+    10: "yaourts"
 }
 
 
@@ -26,7 +30,6 @@ class Product:
     """Class to handle a product object"""
     def __init__(self, name, nutri, store, url, category):
         """Initialize the attribute of the product class"""
-        # lecture des donnees
         self.name = name
         self.nutri = nutri
         self.store = store
@@ -38,7 +41,6 @@ class Substitute:
     """Class to handle a substitute object"""
     def __init__(self, substitute_id, product_ref):
         """Initialize the attribute of the product class"""
-        # lecture des donnees
         self.substitute_id = substitute_id
         self.product_ref = product_ref
 
@@ -56,7 +58,7 @@ class View:
             print("___________________________________")
         try:
             user_input = int(input("number chosen: "))
-            if 0 <= user_input <= 5:
+            if 0 <= user_input <= 10:
                 return user_input
             return self.ask_category(list_category)
         except ValueError:
@@ -116,6 +118,7 @@ class View:
             print("___________________________________")
             print("Substitute N°{}: '{}' ".format(number, info[0]))
             print("the nutriscore is '{}'".format(info[1]))
+            # if there is no stores register, print a message
             if info[2] == " ":
                 print("Sorry, no information about the store is available.")
             else:
@@ -134,7 +137,7 @@ class View:
         return question
 
     def proposal(self):
-        """Question input to ask for saving or not the subsitute"""
+        """Question input to ask for saving or not the substitute"""
         proposal = input(
             "Do you want to add this product "
             "to your favorite substitute? (y/n):"
@@ -191,9 +194,6 @@ class DataBase:
                          "name VARCHAR(30)) " \
                          "ENGINE = INNODB"
         # creating a table product
-        # to integrate the products and all their data
-        # id, name, brand, nutriscore, stores, url and
-        # id category and the foreign key to the table category
         table_product = "CREATE TABLE product " \
                         "(id SMALLINT  NOT NULL AUTO_INCREMENT," \
                         "PRIMARY KEY(id)," \
@@ -207,8 +207,8 @@ class DataBase:
                         "REFERENCES category(id)) " \
                         "ENGINE = INNODB"
         # the substitute Table is simple
-        # because it will be join to the product table later.
-        # Better not to repeat informations
+        # because it will be 'join' to the product table later.
+        # Better not to repeat information
         table_substitute = "CREATE TABLE substitute " \
                            "(substitute_id SMALLINT " \
                            "NOT NULL AUTO_INCREMENT, " \
@@ -238,7 +238,7 @@ class DataBase:
         self.mycursor.execute("USE purbeurre")
 
     def select_category(self):
-        """Method to find the categories record
+        """Method to find the categories names
         inside the category's table"""
         query = "SELECT * FROM category"
         self.mycursor.execute(query)
@@ -340,15 +340,15 @@ class DataBase:
             self.insert_cat(key, value)
             url = "https://fr.openfoodfacts.org/cgi/search.pl"
             payload = {
-                "search_simple": "1",
                 "action": "process",
                 "tagtype_0": "categories",
                 "tag_contains_0": "contains",
                 "tag_0": "{}".format(CATEGORY[key]),
-                "sort_by": "ciqual_food_name_tags",
+                "sort_by": "unique_scans_n",
                 "page_size": "1000",
-                "json": "1"
-            }
+                "axis_x": "energy",
+                "axis_y": ["products_n", "action=display"],
+                "json": "1"}
             response = requests.get(url, params=payload)
             package = response.json()
             prod_base = package['products']
@@ -371,6 +371,8 @@ class DataBase:
                         )
                     except KeyError:
                         print("No stores information available")
+                    except mysql.connector.Error:
+                        print("Error")
 
     def create_or_connect(self):
         """Method to start the program:
@@ -383,11 +385,11 @@ class DataBase:
         else:
             self.create_database()
             self.use_db()
-            self.insert_data(50)
+            self.insert_data(1000)
 
 
 class Controller:
-    """ class to manage all the program
+    """class to manage all the program
     importing the database 's class and the view"""
     def __init__(self):
         """Initialization"""
@@ -400,26 +402,23 @@ class Controller:
             for name, value in login.items():
                 return name, value
 
-    def ask_and_find(self):
+    def find_substitute(self):
         """Method to:
         - ask a category
         - ask a product
         - find a substitute for this chosen product"""
         category = self.appli.select_category()
         ask_cat = self.view.ask_category(category)
-        # aller chercher tout les produits d'une categorie sur mysql
         product = self.appli.select_products(ask_cat)
-        # faire une liste de ses numeros de produits pour demander une selection
         ask_prod = self.view.ask_product(product)
         nutri = self.appli.get_nutriscore(ask_prod)
-        # on met les sub du meilleur au moins bon et on prend le 1 de la liste réordonné
         substitute = self.appli.get_substitute(ask_cat, nutri)
         return substitute
 
     def saving_or_not(self, substitute):
         """Method to:
-        - ask if the client wants to save this substitute in data
-        - react depending of the answer yes or no"""
+        - ask if the client wants to save this subsitute in data
+         - react depending of the answer yes or no"""
         if substitute:
             choice = self.view.substitute_chosen(substitute)
             put_in_sub = self.appli.find_substitute(choice[0])
@@ -444,14 +443,15 @@ class Controller:
     def use_programm(self):
         """Method to start the program
         calling all Methods created"""
-        login = self.yaml_loader("authentification.yaml")
+        login = self.yaml_loader("p5off/authentification.yaml")
         self.appli = DataBase(login[0], login[1])
         self.appli.create_or_connect()
+
         run = 1
         while run:
             question = self.view.question()
             if question == "a":
-                find = self.ask_and_find()
+                find = self.find_substitute()
                 self.saving_or_not(find)
             if question == "b":
                 sub = self.appli.select_substitute()
@@ -459,8 +459,3 @@ class Controller:
             if question == "q":
                 self.view.bye()
                 run = 0
-
-
-pop = Controller()
-pop.use_programm()
-
