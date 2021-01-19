@@ -443,7 +443,7 @@ class Controller:
     def use_programm(self):
         """Method to start the program
         calling all Methods created"""
-        login = self.yaml_loader("p5off/authentification.yaml")
+        login = self.yaml_loader("purbeurre/authentification.yaml")
         self.appli = DataBase(login[0], login[1])
         self.appli.create_or_connect()
 
