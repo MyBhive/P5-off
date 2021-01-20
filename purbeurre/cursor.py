@@ -151,7 +151,7 @@ class View:
 
     def correctly_saved(self):
         """Message: You substitute has been correctly saved!"""
-        correct = print("You substitute has been correctly saved!")
+        correct = print("Your substitute has been correctly saved!")
         return correct
 
     def no_save_wish(self):
@@ -402,7 +402,7 @@ class Controller:
             for name, value in login.items():
                 return name, value
 
-    def find_substitute(self):
+    def search_substitute(self):
         """Method to:
         - ask a category
         - ask a product
@@ -440,7 +440,7 @@ class Controller:
         if not substitute:
             self.view.sub_not_find()
 
-    def use_programm(self):
+    def use_program(self):
         """Method to start the program
         calling all Methods created"""
         login = self.yaml_loader(" purbeurre/authentification.yaml")
@@ -451,11 +451,11 @@ class Controller:
         while run:
             question = self.view.question()
             if question == "a":
-                find = self.find_substitute()
+                find = self.search_substitute()
                 self.saving_or_not(find)
             if question == "b":
                 sub = self.appli.select_substitute()
-                self.view.sub_information(sub)
+                self.view. sub_information(sub)
             if question == "q":
                 self.view.bye()
                 run = 0
