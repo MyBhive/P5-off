@@ -6,7 +6,7 @@
 
 - Run the program
 
-- Download 10 specifics categories (and 1000 products for each categories) from Open Food Facts through an API
+- Download 10 specifics categories (and 1000 products for each categories) from the Open Food Facts API
 - Insert into the "purbeurre" database created for it
 - The program will asks the user if he wants to look for a product and find a better alternative of it (substitute), or to check the substitute already saved (if there is any).
 - The user will have to choose a category depending of the category's number
@@ -16,13 +16,15 @@
 
 ---------------------------------------------------------------------------------------------
 
-[]()**RUN THE GAME:**
+[]()**RUN THE PROGRAM:**
 
 `Installation required:`
 
 - Install Virtual Environment : python -m pip install --user virtualenv
-- Open the file "install.py"
+- Install "mysql" and "pyyaml"
+- Open the file "install.py" to install all the necessary package
   !! Don’t forget to run cmd or powershell as administrator !
+- put your own "user" and "password" in the "authentification.yaml" file to run the program
 
 `Launch:`
 
@@ -45,9 +47,9 @@ https://github.com/MyBhive/P5-off
 
 `Folder`
 
-| purbeurre | Contain all the code |
-| --------- | -------------------- |
-|           |                      |
+| p5off | Contain all the code |
+| ----- | -------------------- |
+|       |                      |
 
 `Python files`
 
@@ -58,9 +60,9 @@ https://github.com/MyBhive/P5-off
 
 `Text files`
 
-| authentification.yaml | login for the database                                    |
-| --------------------- | --------------------------------------------------------- |
-| Requirement.txt       | package to download with "install.py" to run the programm |
+| authentification.yaml | login for the database                                   |
+| --------------------- | -------------------------------------------------------- |
+| Requirement.txt       | package to download with "install.py" to run the program |
 
 ----------------------------------------------------------------------------------------------
 
