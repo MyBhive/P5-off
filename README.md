@@ -21,7 +21,10 @@
 `Installation required:`
 
 - Install Virtual Environment : python -m pip install --user virtualenv
-- Install "mysql" and "pyyaml"
+- Install: 
+  	- mysql-connector-python
+  	- pyyaml
+  	- requests
 - Open the file "install.py" to install all the necessary package
   !! Don’t forget to run cmd or powershell as administrator !
 - put your own "user" and "password" in the "authentification.yaml" file to run the program
