@@ -1,3 +1,4 @@
+# coding: utf-8
 from mysql import connector
 import requests
 from random import choices
