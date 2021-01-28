@@ -59,7 +59,7 @@ class View:
             print("___________________________________")
         try:
             user_input = int(input("number chosen: "))
-            if 0 <= user_input <= 10:
+            if 1 <= user_input <= 10:
                 return user_input
             return self.ask_category(list_category)
         except ValueError:
