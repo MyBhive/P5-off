@@ -50,7 +50,7 @@ https://github.com/MyBhive/P5-off
 
 `Folder`
 
-| p5off | Contain all the code |
+| purbeurre | Contain all the code |
 | ----- | -------------------- |
 |       |                      |
 
